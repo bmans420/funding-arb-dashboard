@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
       supabase.rpc('get_all_exchanges'),
       supabase.rpc('get_all_symbols'),
       (async () => { try { return await supabase.rpc('get_exchange_status_v3', { cache_bust: Date.now() }); } catch { return { data: null }; } })(),
-      supabase.from('oi_data').select('symbol, oi_usd, timestamp').order('timestamp', { ascending: false }),
+      supabase.from('oi_data').select('*'),
       (async () => { try { return await supabase.rpc('get_stock_symbols'); } catch { return { data: null }; } })()
     ])
 
