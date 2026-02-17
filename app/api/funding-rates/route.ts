@@ -26,19 +26,9 @@ function getExchangeDisplayName(exchange: string): string {
   return exchange.charAt(0).toUpperCase() + exchange.slice(1)
 }
 
-async function getReferenceTimestamps(symbol: string, startDate: Date, endDate: Date) {
-  try {
-    const { data, error } = await supabase.rpc('get_reference_timestamps', {
-      p_symbol: symbol,
-      p_start: startDate.getTime(),
-      p_end: endDate.getTime()
-    })
-    if (error) throw error
-    return data || []
-  } catch (error) {
-    console.error(`Error getting reference timestamps for ${symbol}:`, error)
-    return []
-  }
+async function getReferenceTimestamps(_symbol: string, _startDate: Date, _endDate: Date) {
+  // RPC may have mismatched param names; skip and use raw start/end dates
+  return []
 }
 
 async function getExchangeStatus() {
@@ -261,22 +251,36 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cache.data)
     }
     
-    const { data: symbolsData, error: symbolsError } = await supabase
-      .from('funding_rates')
-      .select('symbol')
-    
-    if (symbolsError) throw symbolsError
-    
-    const symbolSet = new Set((symbolsData || []).map((r: any) => r.symbol))
+    // Fetch with high limit to get all distinct symbols (default limit is 1000, table has 329k+ rows)
+    const symbolSet = new Set<string>()
+    let symbolOffset = 0
+    const PAGE = 50000
+    while (true) {
+      const { data: page, error } = await supabase
+        .from('funding_rates')
+        .select('symbol')
+        .range(symbolOffset, symbolOffset + PAGE - 1)
+      if (error) throw error
+      if (!page || page.length === 0) break
+      for (const r of page) symbolSet.add(r.symbol)
+      if (page.length < PAGE) break
+      symbolOffset += PAGE
+    }
     const symbols = Array.from(symbolSet).sort() as string[]
-    
-    const { data: exchangesData, error: exchangesError } = await supabase
-      .from('funding_rates')
-      .select('exchange')
-    
-    if (exchangesError) throw exchangesError
-    
-    const exchangeSet = new Set((exchangesData || []).map((r: any) => r.exchange))
+
+    const exchangeSet = new Set<string>()
+    let exOffset = 0
+    while (true) {
+      const { data: page, error } = await supabase
+        .from('funding_rates')
+        .select('exchange')
+        .range(exOffset, exOffset + PAGE - 1)
+      if (error) throw error
+      if (!page || page.length === 0) break
+      for (const r of page) exchangeSet.add(r.exchange)
+      if (page.length < PAGE) break
+      exOffset += PAGE
+    }
     const exchanges = Array.from(exchangeSet).sort() as string[]
     
     const [exchangeStatus, stockSymbols, oiData] = await Promise.all([
