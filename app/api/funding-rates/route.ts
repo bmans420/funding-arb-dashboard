@@ -30,8 +30,8 @@ async function getReferenceTimestamps(symbol: string, startDate: Date, endDate: 
   try {
     const { data, error } = await supabase.rpc('get_reference_timestamps', {
       p_symbol: symbol,
-      p_start: startDate.toISOString(),
-      p_end: endDate.toISOString()
+      p_start: startDate.getTime(),
+      p_end: endDate.getTime()
     })
     if (error) throw error
     return data || []
@@ -102,8 +102,8 @@ async function getFundingRatesSum(exchange: string, symbol: string, startTime: D
       .select('funding_rate')
       .eq('exchange', exchange)
       .eq('symbol', symbol)
-      .gte('funding_time', startTime.toISOString())
-      .lte('funding_time', endTime.toISOString())
+      .gte('funding_time', startTime.getTime())
+      .lte('funding_time', endTime.getTime())
 
     if (error) throw error
     
