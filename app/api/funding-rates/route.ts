@@ -133,6 +133,17 @@ export async function GET(request: NextRequest) {
     const matrix = matrixResult.data || {}
     const symbols = (symbolsResult.data || []).map((r: any) => r.symbol) as string[]
     const exchanges = (exchangesResult.data || []).map((r: any) => r.exchange) as string[]
+    const displayExchanges = exchanges.map(getExchangeDisplayName)
+
+    // Transform matrix exchange keys to display names
+    const transformedMatrix: any = {}
+    for (const symbol of Object.keys(matrix)) {
+      transformedMatrix[symbol] = {}
+      for (const exchange of Object.keys(matrix[symbol])) {
+        const displayName = getExchangeDisplayName(exchange)
+        transformedMatrix[symbol][displayName] = matrix[symbol][exchange]
+      }
+    }
 
     // Exchange status
     const exchangeStatus: any = {}
@@ -152,13 +163,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Best/worst cells
-    findBestWorstCells(matrix, symbols, exchanges)
+    findBestWorstCells(transformedMatrix, symbols, displayExchanges)
 
-    const arbitrageOpportunities = calculateArbitrageOpportunities(matrix, symbols, exchanges)
+    const arbitrageOpportunities = calculateArbitrageOpportunities(transformedMatrix, symbols, displayExchanges)
 
     const responseData = {
-      matrix,
-      exchanges: exchanges.map(getExchangeDisplayName),
+      matrix: transformedMatrix,
+      exchanges: displayExchanges,
       exchangeStatus,
       oiData,
       stockSymbols: [],
