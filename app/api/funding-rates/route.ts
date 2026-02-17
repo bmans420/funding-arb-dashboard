@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Pool } from 'pg'
+import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-})
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 let cache: { data: any; timestamp: number; days: number } | null = null
 const CACHE_TTL = 5 * 60 * 1000
@@ -31,11 +28,13 @@ function getExchangeDisplayName(exchange: string): string {
 
 async function getReferenceTimestamps(symbol: string, startDate: Date, endDate: Date) {
   try {
-    const result = await pool.query(
-      'SELECT * FROM get_reference_timestamps($1, $2, $3)',
-      [symbol, startDate.toISOString(), endDate.toISOString()]
-    )
-    return result.rows
+    const { data, error } = await supabase.rpc('get_reference_timestamps', {
+      p_symbol: symbol,
+      p_start: startDate.toISOString(),
+      p_end: endDate.toISOString()
+    })
+    if (error) throw error
+    return data || []
   } catch (error) {
     console.error(`Error getting reference timestamps for ${symbol}:`, error)
     return []
@@ -44,10 +43,11 @@ async function getReferenceTimestamps(symbol: string, startDate: Date, endDate: 
 
 async function getExchangeStatus() {
   try {
-    const result = await pool.query('SELECT * FROM get_exchange_status()')
-    const status: { [key: string]: any } = {}
+    const { data, error } = await supabase.rpc('get_exchange_status')
+    if (error) throw error
     
-    for (const row of result.rows) {
+    const status: { [key: string]: any } = {}
+    for (const row of (data || [])) {
       status[row.exchange] = {
         status: row.hours_since_update < 2 ? 'healthy' : 
                 row.hours_since_update < 6 ? 'warning' : 'error',
@@ -55,7 +55,6 @@ async function getExchangeStatus() {
         count: row.symbol_count
       }
     }
-    
     return status
   } catch (error) {
     console.error('Error getting exchange status:', error)
@@ -65,8 +64,9 @@ async function getExchangeStatus() {
 
 async function getStockSymbols() {
   try {
-    const result = await pool.query('SELECT * FROM get_stock_symbols()')
-    return result.rows.map((row: any) => row.symbol)
+    const { data, error } = await supabase.rpc('get_stock_symbols')
+    if (error) throw error
+    return (data || []).map((row: any) => row.symbol)
   } catch (error) {
     console.error('Error getting stock symbols:', error)
     return []
@@ -75,21 +75,48 @@ async function getStockSymbols() {
 
 async function getOIData() {
   try {
-    const result = await pool.query(`
-      SELECT DISTINCT ON (symbol) symbol, oi_usd 
-      FROM oi_data 
-      ORDER BY symbol, timestamp DESC
-    `)
+    // Get latest OI data per symbol using Supabase query
+    const { data, error } = await supabase
+      .from('oi_data')
+      .select('symbol, oi_usd, timestamp')
+      .order('timestamp', { ascending: false })
     
+    if (error) throw error
+    
+    // Deduplicate: keep only the latest per symbol
     const oiData: { [key: string]: number } = {}
-    for (const row of result.rows) {
-      oiData[row.symbol] = parseFloat(row.oi_usd) || 0
+    for (const row of (data || [])) {
+      if (!oiData[row.symbol]) {
+        oiData[row.symbol] = parseFloat(row.oi_usd) || 0
+      }
     }
-    
     return oiData
   } catch (error) {
     console.error('Error getting OI data:', error)
     return {}
+  }
+}
+
+async function getFundingRatesSum(exchange: string, symbol: string, startTime: Date, endTime: Date): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from('funding_rates')
+      .select('funding_rate')
+      .eq('exchange', exchange)
+      .eq('symbol', symbol)
+      .gte('funding_time', startTime.toISOString())
+      .lte('funding_time', endTime.toISOString())
+
+    if (error) throw error
+    
+    let sum = 0
+    for (const row of (data || [])) {
+      sum += parseFloat(row.funding_rate) || 0
+    }
+    return sum
+  } catch (error) {
+    console.error(`Error getting rates for ${exchange}-${symbol}:`, error)
+    return 0
   }
 }
 
@@ -111,28 +138,20 @@ async function processSymbolData(symbol: string, exchanges: string[], endTime: D
     
     const symbolData: { [exchange: string]: { apr: number; rawPercent: number } } = {}
     
-    for (const exchange of exchanges) {
-      try {
-        const result = await pool.query(`
-          SELECT SUM(funding_rate) as rate_sum 
-          FROM funding_rates 
-          WHERE exchange = $1 
-            AND symbol = $2 
-            AND funding_time >= $3 
-            AND funding_time <= $4
-        `, [exchange, symbol, actualStart.toISOString(), actualEnd.toISOString()])
-        
-        const rateSum = parseFloat(result.rows[0]?.rate_sum || 0)
-        const actualDays = Math.max(1, (actualEnd.getTime() - actualStart.getTime()) / (24 * 60 * 60 * 1000))
-        
-        symbolData[exchange] = {
-          apr: calculateAPR(rateSum, actualDays),
-          rawPercent: rateSumToPercent(rateSum)
-        }
-      } catch (error) {
-        console.error(`Error getting rates for ${exchange}-${symbol}:`, error)
-        symbolData[exchange] = { apr: 0, rawPercent: 0 }
+    // Fetch all exchanges in parallel for this symbol
+    const exchangePromises = exchanges.map(async (exchange) => {
+      const rateSum = await getFundingRatesSum(exchange, symbol, actualStart, actualEnd)
+      const actualDays = Math.max(1, (actualEnd.getTime() - actualStart.getTime()) / (24 * 60 * 60 * 1000))
+      return {
+        exchange,
+        apr: calculateAPR(rateSum, actualDays),
+        rawPercent: rateSumToPercent(rateSum)
       }
+    })
+    
+    const results = await Promise.all(exchangePromises)
+    for (const r of results) {
+      symbolData[r.exchange] = { apr: r.apr, rawPercent: r.rawPercent }
     }
     
     return symbolData
@@ -226,6 +245,18 @@ function calculateArbitrageOpportunities(matrix: any, symbols: string[], exchang
 
 export async function GET(request: NextRequest) {
   try {
+    // Debug: check env vars are present
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Missing env vars:', {
+        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+      })
+      return NextResponse.json(
+        { error: 'Server configuration error: missing Supabase credentials' },
+        { status: 500 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('days') || '7')
     
@@ -234,17 +265,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cache.data)
     }
     
-    const symbolsResult = await pool.query(`
-      SELECT DISTINCT symbol FROM funding_rates 
-      ORDER BY symbol
-    `)
-    const symbols = symbolsResult.rows.map((row: any) => row.symbol)
+    // Get distinct symbols
+    const { data: symbolsData, error: symbolsError } = await supabase
+      .from('funding_rates')
+      .select('symbol')
     
-    const exchangesResult = await pool.query(`
-      SELECT DISTINCT exchange FROM funding_rates 
-      ORDER BY exchange
-    `)
-    const exchanges = exchangesResult.rows.map((row: any) => row.exchange)
+    if (symbolsError) throw symbolsError
+    
+    const symbols = [...new Set((symbolsData || []).map((r: any) => r.symbol))].sort() as string[]
+    
+    // Get distinct exchanges
+    const { data: exchangesData, error: exchangesError } = await supabase
+      .from('funding_rates')
+      .select('exchange')
+    
+    if (exchangesError) throw exchangesError
+    
+    const exchanges = [...new Set((exchangesData || []).map((r: any) => r.exchange))].sort() as string[]
     
     const [exchangeStatus, stockSymbols, oiData] = await Promise.all([
       getExchangeStatus(),
@@ -286,10 +323,14 @@ export async function GET(request: NextRequest) {
     cache = { data: responseData, timestamp: now, days }
     
     return NextResponse.json(responseData)
-  } catch (error) {
-    console.error('Error in funding-rates API:', error)
+  } catch (error: any) {
+    console.error('Error in funding-rates API:', {
+      message: error?.message,
+      stack: error?.stack,
+      cause: error?.cause
+    })
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', message: error?.message ?? 'unknown' },
       { status: 500 }
     )
   }
