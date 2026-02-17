@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       supabase.rpc('get_funding_matrix', { p_days: days }),
       supabase.rpc('get_all_exchanges'),
       supabase.rpc('get_all_symbols'),
-      supabase.rpc('get_exchange_status').catch(() => ({ data: null })),
+      (async () => { try { return await supabase.rpc('get_exchange_status'); } catch { return { data: null }; } })(),
       supabase.from('oi_data').select('symbol, oi_usd, timestamp').order('timestamp', { ascending: false })
     ])
 
