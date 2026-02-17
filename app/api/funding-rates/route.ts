@@ -241,37 +241,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cache.data)
     }
     
-    // Fetch with high limit to get all distinct symbols (default limit is 1000, table has 329k+ rows)
-    const symbolSet = new Set<string>()
-    let symbolOffset = 0
-    const PAGE = 50000
-    while (true) {
-      const { data: page, error } = await supabase
-        .from('funding_rates')
-        .select('symbol')
-        .range(symbolOffset, symbolOffset + PAGE - 1)
-      if (error) throw error
-      if (!page || page.length === 0) break
-      for (const r of page) symbolSet.add(r.symbol)
-      if (page.length < PAGE) break
-      symbolOffset += PAGE
-    }
-    const symbols = Array.from(symbolSet).sort() as string[]
+    // Get distinct symbols via RPC
+    const { data: symbolsData, error: symbolsError } = await supabase.rpc('get_all_symbols')
+    if (symbolsError) throw symbolsError
+    const symbols = (symbolsData || []).map((r: any) => r.symbol) as string[]
 
-    const exchangeSet = new Set<string>()
-    let exOffset = 0
-    while (true) {
-      const { data: page, error } = await supabase
-        .from('funding_rates')
-        .select('exchange')
-        .range(exOffset, exOffset + PAGE - 1)
-      if (error) throw error
-      if (!page || page.length === 0) break
-      for (const r of page) exchangeSet.add(r.exchange)
-      if (page.length < PAGE) break
-      exOffset += PAGE
-    }
-    const exchanges = Array.from(exchangeSet).sort() as string[]
+    // Get distinct exchanges via RPC
+    const { data: exchangesData, error: exchangesError } = await supabase.rpc('get_all_exchanges')
+    if (exchangesError) throw exchangesError
+    const exchanges = (exchangesData || []).map((r: any) => r.exchange) as string[]
     
     const [exchangeStatus, stockSymbols, oiData] = await Promise.all([
       getExchangeStatus(),
