@@ -111,18 +111,8 @@ async function getFundingRatesSum(exchange: string, symbol: string, startTime: D
 async function processSymbolData(symbol: string, exchanges: string[], endTime: Date, days: number) {
   try {
     const startTime = new Date(endTime.getTime() - (days * 24 * 60 * 60 * 1000))
-    const refTimestamps = await getReferenceTimestamps(symbol, startTime, endTime)
-    
-    let actualStart: Date
-    let actualEnd: Date
-    
-    if (refTimestamps.length > 0) {
-      actualStart = new Date(refTimestamps[0].funding_time)
-      actualEnd = new Date(refTimestamps[refTimestamps.length - 1].funding_time)
-    } else {
-      actualStart = startTime
-      actualEnd = endTime
-    }
+    const actualStart = startTime
+    const actualEnd = endTime
     
     const symbolData: { [exchange: string]: { apr: number; rawPercent: number } } = {}
     
