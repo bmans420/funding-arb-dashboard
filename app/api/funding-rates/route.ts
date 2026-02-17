@@ -122,12 +122,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cache.data)
     }
 
-    const [matrixResult, exchangesResult, symbolsResult, statusResult, oiResult] = await Promise.all([
+    const [matrixResult, exchangesResult, symbolsResult, statusResult, oiResult, stockResult] = await Promise.all([
       supabase.rpc('get_funding_matrix', { p_days: days }),
       supabase.rpc('get_all_exchanges'),
       supabase.rpc('get_all_symbols'),
-      (async () => { try { return await supabase.rpc('get_exchange_status'); } catch { return { data: null }; } })(),
-      supabase.from('oi_data').select('symbol, oi_usd, timestamp').order('timestamp', { ascending: false })
+      (async () => { try { return await supabase.rpc('get_exchange_status_v2'); } catch { return { data: null }; } })(),
+      supabase.from('oi_data').select('symbol, oi_usd, timestamp').order('timestamp', { ascending: false }),
+      (async () => { try { return await supabase.rpc('get_stock_symbols'); } catch { return { data: null }; } })()
     ])
 
     const matrix = matrixResult.data || {}
@@ -172,7 +173,7 @@ export async function GET(request: NextRequest) {
       exchanges: displayExchanges,
       exchangeStatus,
       oiData,
-      stockSymbols: [],
+      stockSymbols: (stockResult.data || []).map((r: any) => r.symbol),
       arbitrageOpportunities
     }
 
