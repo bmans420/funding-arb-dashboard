@@ -75,7 +75,6 @@ async function getStockSymbols() {
 
 async function getOIData() {
   try {
-    // Get latest OI data per symbol using Supabase query
     const { data, error } = await supabase
       .from('oi_data')
       .select('symbol, oi_usd, timestamp')
@@ -83,7 +82,6 @@ async function getOIData() {
     
     if (error) throw error
     
-    // Deduplicate: keep only the latest per symbol
     const oiData: { [key: string]: number } = {}
     for (const row of (data || [])) {
       if (!oiData[row.symbol]) {
@@ -138,7 +136,6 @@ async function processSymbolData(symbol: string, exchanges: string[], endTime: D
     
     const symbolData: { [exchange: string]: { apr: number; rawPercent: number } } = {}
     
-    // Fetch all exchanges in parallel for this symbol
     const exchangePromises = exchanges.map(async (exchange) => {
       const rateSum = await getFundingRatesSum(exchange, symbol, actualStart, actualEnd)
       const actualDays = Math.max(1, (actualEnd.getTime() - actualStart.getTime()) / (24 * 60 * 60 * 1000))
@@ -245,7 +242,6 @@ function calculateArbitrageOpportunities(matrix: any, symbols: string[], exchang
 
 export async function GET(request: NextRequest) {
   try {
-    // Debug: check env vars are present
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       console.error('Missing env vars:', {
         hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -265,7 +261,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cache.data)
     }
     
-    // Get distinct symbols
     const { data: symbolsData, error: symbolsError } = await supabase
       .from('funding_rates')
       .select('symbol')
@@ -274,7 +269,6 @@ export async function GET(request: NextRequest) {
     
     const symbols = [...new Set((symbolsData || []).map((r: any) => r.symbol))].sort() as string[]
     
-    // Get distinct exchanges
     const { data: exchangesData, error: exchangesError } = await supabase
       .from('funding_rates')
       .select('exchange')
