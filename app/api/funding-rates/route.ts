@@ -11,14 +11,6 @@ const supabase = createClient(
 let cache: { data: any; timestamp: number; days: number } | null = null
 const CACHE_TTL = 5 * 60 * 1000
 
-function calculateAPR(rateSum: number, days: number): number {
-  return rateSum * (365 / days) * 100
-}
-
-function rateSumToPercent(rateSum: number): number {
-  return rateSum * 100
-}
-
 function getExchangeDisplayName(exchange: string): string {
   if (exchange.startsWith('hl-')) {
     return `HL-${exchange.substring(3)}`
@@ -31,7 +23,7 @@ function findBestWorstCells(matrix: any, symbols: string[], exchanges: string[])
   let worstAPR = Infinity
   let bestCells: string[] = []
   let worstCells: string[] = []
-  
+
   for (const symbol of symbols) {
     for (const exchange of exchanges) {
       const cellData = matrix[symbol]?.[exchange]
@@ -52,7 +44,7 @@ function findBestWorstCells(matrix: any, symbols: string[], exchanges: string[])
       }
     }
   }
-  
+
   for (const symbol of symbols) {
     for (const exchange of exchanges) {
       if (matrix[symbol]?.[exchange]) {
@@ -66,34 +58,34 @@ function findBestWorstCells(matrix: any, symbols: string[], exchanges: string[])
 
 function calculateArbitrageOpportunities(matrix: any, symbols: string[], exchanges: string[]) {
   const opportunities: any[] = []
-  
+
   for (const symbol of symbols) {
     const symbolData = matrix[symbol]
     if (!symbolData) continue
-    
+
     const availableExchanges = exchanges.filter(ex => symbolData[ex])
     if (availableExchanges.length < 2) continue
-    
+
     for (let i = 0; i < availableExchanges.length; i++) {
       for (let j = i + 1; j < availableExchanges.length; j++) {
         const ex1 = availableExchanges[i]
         const ex2 = availableExchanges[j]
-        
+
         const apr1 = symbolData[ex1].apr
         const apr2 = symbolData[ex2].apr
-        
+
         const diff = Math.abs(apr1 - apr2)
-        
+
         if (diff >= 0.5) {
           const longExchange = apr1 < apr2 ? ex1 : ex2
           const shortExchange = apr1 < apr2 ? ex2 : ex1
           const longRate = apr1 < apr2 ? apr1 : apr2
           const shortRate = apr1 < apr2 ? apr2 : apr1
-          
+
           opportunities.push({
             symbol,
-            longExchange: getExchangeDisplayName(longExchange),
-            shortExchange: getExchangeDisplayName(shortExchange),
+            longExchange,
+            shortExchange,
             longRate,
             shortRate,
             netCollection: diff
@@ -102,7 +94,7 @@ function calculateArbitrageOpportunities(matrix: any, symbols: string[], exchang
       }
     }
   }
-  
+
   return opportunities
     .sort((a: any, b: any) => b.netCollection - a.netCollection)
     .slice(0, 20)
@@ -149,7 +141,8 @@ export async function GET(request: NextRequest) {
     // Exchange status
     const exchangeStatus: any = {}
     for (const row of (statusResult.data || [])) {
-      exchangeStatus[row.exchange] = {
+      const displayName = getExchangeDisplayName(row.exchange)
+      exchangeStatus[displayName] = {
         status: row.hours_since_update < 2 ? 'healthy' :
                 row.hours_since_update < 6 ? 'warning' : 'error',
         lastUpdate: row.last_update,
@@ -163,6 +156,9 @@ export async function GET(request: NextRequest) {
       if (!oiData[row.symbol]) oiData[row.symbol] = parseFloat(row.oi_usd) || 0
     }
 
+    // Stock symbols
+    const stockSymbols = (stockResult.data || []).map((r: any) => r.symbol)
+
     // Best/worst cells
     findBestWorstCells(transformedMatrix, symbols, displayExchanges)
 
@@ -173,12 +169,11 @@ export async function GET(request: NextRequest) {
       exchanges: displayExchanges,
       exchangeStatus,
       oiData,
-      stockSymbols: (stockResult.data || []).map((r: any) => r.symbol),
+      stockSymbols,
       arbitrageOpportunities
     }
 
     cache = { data: responseData, timestamp: now, days }
-
     return NextResponse.json(responseData)
   } catch (error: any) {
     console.error('Error in funding-rates API:', {
