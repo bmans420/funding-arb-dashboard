@@ -267,7 +267,8 @@ export async function GET(request: NextRequest) {
     
     if (symbolsError) throw symbolsError
     
-    const symbols = [...new Set((symbolsData || []).map((r: any) => r.symbol))].sort() as string[]
+    const symbolSet = new Set((symbolsData || []).map((r: any) => r.symbol))
+    const symbols = Array.from(symbolSet).sort() as string[]
     
     const { data: exchangesData, error: exchangesError } = await supabase
       .from('funding_rates')
@@ -275,7 +276,8 @@ export async function GET(request: NextRequest) {
     
     if (exchangesError) throw exchangesError
     
-    const exchanges = [...new Set((exchangesData || []).map((r: any) => r.exchange))].sort() as string[]
+    const exchangeSet = new Set((exchangesData || []).map((r: any) => r.exchange))
+    const exchanges = Array.from(exchangeSet).sort() as string[]
     
     const [exchangeStatus, stockSymbols, oiData] = await Promise.all([
       getExchangeStatus(),
