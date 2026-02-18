@@ -115,7 +115,14 @@ export async function GET(request: NextRequest) {
 
     const matrix = matrixResult.data || {}
     const symbols = (symbolsResult.data || []).map((r: any) => r.symbol) as string[]
-    const exchanges = (exchangesResult.data || []).map((r: any) => r.exchange) as string[]
+    const dbExchanges = (exchangesResult.data || []).map((r: any) => r.exchange) as string[]
+    const matrixExchanges = new Set<string>()
+    for (const symbol of Object.keys(matrix)) {
+      for (const exchange of Object.keys(matrix[symbol])) {
+        matrixExchanges.add(exchange)
+      }
+    }
+    const exchanges = [...new Set([...dbExchanges, ...matrixExchanges])].sort()
     const displayExchanges = exchanges.map(getExchangeDisplayName)
 
     // Transform matrix exchange keys to display names
