@@ -150,10 +150,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // OI data deduplicated
+    // OI data
     const oiData: any = {}
     for (const row of (oiResult.data || [])) {
-      if (!oiData[row.symbol]) oiData[row.symbol] = parseFloat(row.oi_usd) || 0
+      if (row.symbol && row.oi_usd != null) {
+        oiData[row.symbol] = typeof row.oi_usd === 'number' ? row.oi_usd : parseFloat(row.oi_usd) || 0
+      }
     }
 
     // Stock symbols
