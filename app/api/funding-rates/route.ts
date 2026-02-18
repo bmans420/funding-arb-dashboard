@@ -73,28 +73,26 @@ function calculateArbitrageOpportunities(matrix: any, symbols: string[], exchang
 
         const diff = Math.abs(apr1 - apr2)
 
-        if (diff >= 0.5) {
-          const longExchange = apr1 < apr2 ? ex1 : ex2
-          const shortExchange = apr1 < apr2 ? ex2 : ex1
-          const longRate = apr1 < apr2 ? apr1 : apr2
-          const shortRate = apr1 < apr2 ? apr2 : apr1
+        const longExchange = apr1 < apr2 ? ex1 : ex2
+        const shortExchange = apr1 < apr2 ? ex2 : ex1
+        const longRate = apr1 < apr2 ? apr1 : apr2
+        const shortRate = apr1 < apr2 ? apr2 : apr1
 
-          opportunities.push({
-            symbol,
-            longExchange,
-            shortExchange,
-            longRate,
-            shortRate,
-            netCollection: diff
-          })
-        }
+        opportunities.push({
+          symbol,
+          longExchange,
+          shortExchange,
+          longRate,
+          shortRate,
+          netCollection: diff
+        })
       }
     }
   }
 
   return opportunities
     .sort((a: any, b: any) => b.netCollection - a.netCollection)
-    .slice(0, 20)
+    .slice(0, 500)
 }
 
 export async function GET(request: NextRequest) {
