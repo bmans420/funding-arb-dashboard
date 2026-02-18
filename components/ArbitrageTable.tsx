@@ -83,7 +83,7 @@ export default function ArbitrageTable({
         </div>
       </div>
       
-      <div className="matrix-container" style={{ maxHeight: '40vh', overflow: 'auto' }}>
+      <div className="matrix-container">
         <table className="arbitrage-table">
           <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
             <tr>

@@ -163,8 +163,8 @@ function DashboardContent() {
   }
 
   return (
-    <div className="h-screen flex flex-col p-4 max-w-[1400px] mx-auto overflow-hidden">
-      <header className="flex-shrink-0 mb-4">
+    <div className="p-4 max-w-[1400px] mx-auto">
+      <header className="mb-4">
         <h1 className="text-3xl font-bold mb-1">Funding Rates Dashboard</h1>
         <p className="text-muted-foreground">
           Real-time cryptocurrency funding rates and arbitrage opportunities
@@ -172,20 +172,16 @@ function DashboardContent() {
       </header>
 
       {data && (
-        <div className="flex flex-col flex-1 min-h-0 gap-4">
-          <div className="flex-shrink-0">
-            <ExchangeStatus exchangeStatus={data.exchangeStatus} />
-          </div>
+        <>
+          <ExchangeStatus exchangeStatus={data.exchangeStatus} />
 
-          <div className="flex-shrink-0">
-            <TimeframeBar
-              timeframes={timeframes}
-              selectedDays={days}
-              onTimeframeChange={handleTimeframeChange}
-            />
-          </div>
+          <TimeframeBar
+            timeframes={timeframes}
+            selectedDays={days}
+            onTimeframeChange={handleTimeframeChange}
+          />
 
-          <div className="flex-shrink-0 search-container">
+          <div className="search-container">
             <input
               type="text"
               placeholder="Search assets..."
@@ -195,7 +191,7 @@ function DashboardContent() {
             />
           </div>
 
-          <div className="flex-1 min-h-0">
+          <div style={{ maxHeight: '55vh', overflowY: 'auto', overflowX: 'auto', marginBottom: '2rem' }}>
             <FundingMatrix
               matrix={data.matrix}
               exchanges={data.exchanges}
@@ -206,7 +202,7 @@ function DashboardContent() {
             />
           </div>
 
-          <div className="flex-shrink-0">
+          <div style={{ maxHeight: '45vh', overflowY: 'auto' }}>
             <ArbitrageTable
               arbitrageOpportunities={data.arbitrageOpportunities}
               exchanges={data.exchanges}
@@ -227,7 +223,7 @@ function DashboardContent() {
               oiData={data.oiData}
             />
           </div>
-        </div>
+        </>
       )}
     </div>
   )

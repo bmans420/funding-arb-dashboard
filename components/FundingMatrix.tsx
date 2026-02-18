@@ -88,7 +88,7 @@ export default function FundingMatrix({
   }
   
   return (
-    <div className="matrix-container" style={{ maxHeight: '60vh', overflow: 'auto' }}>
+    <div className="matrix-container">
       <table className="matrix-table">
         <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
           <tr>
