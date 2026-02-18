@@ -52,24 +52,23 @@ export default function ExchangeStatus({ exchangeStatus }: ExchangeStatusProps) 
   
   return (
     <div className="exchange-status">
-      <div className="flex items-center justify-between mb-3">
+      <div
+        className="flex items-center justify-between cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
         <div className="flex items-center gap-4">
-          <h3 className="text-lg font-semibold">Exchange Health Status</h3>
+          <h3 className="text-lg font-semibold">Exchange Health</h3>
           <div className="flex gap-2">
             <span className="status-item status-healthy">✓ {healthyCount} Healthy</span>
             {warningCount > 0 && <span className="status-item status-warning">⚠ {warningCount} Warning</span>}
             {errorCount > 0 && <span className="status-item status-error">✗ {errorCount} Error</span>}
           </div>
         </div>
-        <button onClick={() => setExpanded(!expanded)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          {expanded ? 'Hide Details' : 'Show Details'}
+        <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          {expanded ? '▲ Hide' : '▼ Details'}
         </button>
       </div>
-      
-      <div className="text-sm text-muted-foreground mb-2">
-        {exchanges.length} exchanges monitored • Last updated: {new Date().toLocaleTimeString()}
-      </div>
-      
+
       {expanded && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-4">
           {exchanges.map(exchange => {
@@ -88,22 +87,6 @@ export default function ExchangeStatus({ exchangeStatus }: ExchangeStatusProps) 
               </div>
             )
           })}
-        </div>
-      )}
-      
-      {!expanded && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {exchanges.slice(0, 10).map(exchange => {
-            const status = exchangeStatus[exchange]
-            if (!status) return null
-            return (
-              <span key={exchange} className={`status-item ${getStatusClass(status.status)} text-xs`}
-                title={`${getExchangeDisplayName(exchange)}: ${status.status} (${status.count} symbols)`}>
-                {getExchangeDisplayName(exchange)}
-              </span>
-            )
-          })}
-          {exchanges.length > 10 && <span className="text-xs text-muted-foreground px-2 py-1">+{exchanges.length - 10} more</span>}
         </div>
       )}
     </div>

@@ -88,9 +88,9 @@ export default function FundingMatrix({
   }
   
   return (
-    <div className="matrix-container">
+    <div className="matrix-container" style={{ maxHeight: '60vh', overflow: 'auto' }}>
       <table className="matrix-table">
-        <thead>
+        <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
           <tr>
             <th className={getSortClass('symbol')} onClick={() => onSort('symbol')}>
               Symbol

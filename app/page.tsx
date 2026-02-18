@@ -163,25 +163,29 @@ function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-[1400px] mx-auto">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Funding Rates Dashboard</h1>
+    <div className="h-screen flex flex-col p-4 max-w-[1400px] mx-auto overflow-hidden">
+      <header className="flex-shrink-0 mb-4">
+        <h1 className="text-3xl font-bold mb-1">Funding Rates Dashboard</h1>
         <p className="text-muted-foreground">
           Real-time cryptocurrency funding rates and arbitrage opportunities
         </p>
       </header>
 
       {data && (
-        <>
-          <ExchangeStatus exchangeStatus={data.exchangeStatus} />
-          
-          <TimeframeBar 
-            timeframes={timeframes}
-            selectedDays={days}
-            onTimeframeChange={handleTimeframeChange}
-          />
+        <div className="flex flex-col flex-1 min-h-0 gap-4">
+          <div className="flex-shrink-0">
+            <ExchangeStatus exchangeStatus={data.exchangeStatus} />
+          </div>
 
-          <div className="search-container">
+          <div className="flex-shrink-0">
+            <TimeframeBar
+              timeframes={timeframes}
+              selectedDays={days}
+              onTimeframeChange={handleTimeframeChange}
+            />
+          </div>
+
+          <div className="flex-shrink-0 search-container">
             <input
               type="text"
               placeholder="Search assets..."
@@ -191,35 +195,39 @@ function DashboardContent() {
             />
           </div>
 
-          <FundingMatrix 
-            matrix={data.matrix}
-            exchanges={data.exchanges}
-            filteredSymbols={filteredSymbols}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-          />
+          <div className="flex-1 min-h-0">
+            <FundingMatrix
+              matrix={data.matrix}
+              exchanges={data.exchanges}
+              filteredSymbols={filteredSymbols}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            />
+          </div>
 
-          <ArbitrageTable 
-            arbitrageOpportunities={data.arbitrageOpportunities}
-            exchanges={data.exchanges}
-            selectedExchanges={selectedExchanges}
-            onExchangeToggle={(exchange) => {
-              if (selectedExchanges.includes(exchange)) {
-                setSelectedExchanges(selectedExchanges.filter(e => e !== exchange))
-              } else {
-                setSelectedExchanges([...selectedExchanges, exchange])
-              }
-            }}
-            stocksOnly={stocksOnly}
-            onStocksOnlyToggle={setStocksOnly}
-            top10OI={top10OI}
-            onTop10OIToggle={setTop10OI}
-            filteredSymbols={filteredSymbols}
-            stockSymbols={data.stockSymbols}
-            oiData={data.oiData}
-          />
-        </>
+          <div className="flex-shrink-0">
+            <ArbitrageTable
+              arbitrageOpportunities={data.arbitrageOpportunities}
+              exchanges={data.exchanges}
+              selectedExchanges={selectedExchanges}
+              onExchangeToggle={(exchange) => {
+                if (selectedExchanges.includes(exchange)) {
+                  setSelectedExchanges(selectedExchanges.filter(e => e !== exchange))
+                } else {
+                  setSelectedExchanges([...selectedExchanges, exchange])
+                }
+              }}
+              stocksOnly={stocksOnly}
+              onStocksOnlyToggle={setStocksOnly}
+              top10OI={top10OI}
+              onTop10OIToggle={setTop10OI}
+              filteredSymbols={filteredSymbols}
+              stockSymbols={data.stockSymbols}
+              oiData={data.oiData}
+            />
+          </div>
+        </div>
       )}
     </div>
   )

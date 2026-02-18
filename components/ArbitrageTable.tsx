@@ -83,9 +83,9 @@ export default function ArbitrageTable({
         </div>
       </div>
       
-      <div className="matrix-container">
+      <div className="matrix-container" style={{ maxHeight: '40vh', overflow: 'auto' }}>
         <table className="arbitrage-table">
-          <thead>
+          <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
             <tr>
               <th>Symbol</th>
               <th>Long Position</th>
@@ -123,7 +123,7 @@ export default function ArbitrageTable({
       
       {filteredOpportunities.length > 0 && (
         <div className="mt-4 text-sm text-muted-foreground">
-          Showing {filteredOpportunities.length} arbitrage opportunities with ≥0.5% spread.
+          Showing {filteredOpportunities.length} arbitrage opportunities.
           <br />
           <strong>Strategy:</strong> Long the lower rate exchange, short the higher rate exchange to collect the net spread.
         </div>
