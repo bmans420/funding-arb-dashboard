@@ -88,15 +88,15 @@ export default function FundingMatrix({
   }
   
   return (
-    <div className="matrix-container">
+    <div>
       <table className="matrix-table">
-        <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+        <thead>
           <tr>
-            <th className={getSortClass('symbol')} onClick={() => onSort('symbol')}>
+            <th className={getSortClass('symbol')} onClick={() => onSort('symbol')} style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>
               Symbol
             </th>
             {exchanges.map(exchange => (
-              <th key={exchange} className={getSortClass(exchange)} onClick={() => onSort(exchange)}>
+              <th key={exchange} className={getSortClass(exchange)} onClick={() => onSort(exchange)} style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>
                 {exchange}
               </th>
             ))}

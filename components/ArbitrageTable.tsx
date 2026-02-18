@@ -83,17 +83,17 @@ export default function ArbitrageTable({
         </div>
       </div>
       
-      <div className="matrix-container">
+      <div>
         <table className="arbitrage-table">
-          <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+          <thead>
             <tr>
-              <th>Symbol</th>
-              <th>Long Position</th>
-              <th>Short Position</th>
-              <th>Long Rate (%)</th>
-              <th>Short Rate (%)</th>
-              <th>Net Collection (%)</th>
-              <th>OI (USD)</th>
+              <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Symbol</th>
+              <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Long Position</th>
+              <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Short Position</th>
+              <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Long Rate (%)</th>
+              <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Short Rate (%)</th>
+              <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Net Collection (%)</th>
+              <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>OI (USD)</th>
             </tr>
           </thead>
           <tbody>

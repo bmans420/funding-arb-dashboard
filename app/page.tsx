@@ -163,10 +163,10 @@ function DashboardContent() {
   }
 
   return (
-    <div className="p-4 max-w-[1400px] mx-auto">
+    <div className="px-4 pt-6 pb-4 max-w-[1400px] mx-auto">
       <header className="mb-4">
-        <h1 className="text-3xl font-bold mb-1">Funding Rates Dashboard</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-bold mb-1">Funding Rates Dashboard</h1>
+        <p className="text-sm text-muted-foreground">
           Real-time cryptocurrency funding rates and arbitrage opportunities
         </p>
       </header>
@@ -191,7 +191,7 @@ function DashboardContent() {
             />
           </div>
 
-          <div style={{ maxHeight: '55vh', overflowY: 'auto', overflowX: 'auto', marginBottom: '2rem' }}>
+          <div style={{ maxHeight: '55vh', overflowY: 'auto', overflowX: 'auto', marginBottom: '3rem', borderRadius: '6px', border: '1px solid #30363d' }}>
             <FundingMatrix
               matrix={data.matrix}
               exchanges={data.exchanges}
@@ -202,7 +202,7 @@ function DashboardContent() {
             />
           </div>
 
-          <div style={{ maxHeight: '45vh', overflowY: 'auto' }}>
+          <div style={{ maxHeight: '45vh', overflowY: 'auto', borderRadius: '6px', border: '1px solid #30363d' }}>
             <ArbitrageTable
               arbitrageOpportunities={data.arbitrageOpportunities}
               exchanges={data.exchanges}
