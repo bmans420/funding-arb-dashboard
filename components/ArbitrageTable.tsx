@@ -28,12 +28,12 @@ export default function ArbitrageTable({
   stocksOnly, onStocksOnlyToggle, top10OI, onTop10OIToggle,
   filteredSymbols, stockSymbols, oiData
 }: ArbitrageTableProps) {
-  
+
   const filteredOpportunities = arbitrageOpportunities.filter(opp => {
-    const longSelected = selectedExchanges.some(ex => 
+    const longSelected = selectedExchanges.some(ex =>
       ex === opp.longExchange || ex.toLowerCase() === opp.longExchange.toLowerCase()
     )
-    const shortSelected = selectedExchanges.some(ex => 
+    const shortSelected = selectedExchanges.some(ex =>
       ex === opp.shortExchange || ex.toLowerCase() === opp.shortExchange.toLowerCase()
     )
     if (!longSelected || !shortSelected) return false
@@ -46,18 +46,18 @@ export default function ArbitrageTable({
     }
     return filteredSymbols.includes(opp.symbol)
   })
-  
+
   const formatNumber = (num: number) => {
     if (Math.abs(num) >= 1000000000) return (num / 1000000000).toFixed(2) + 'B'
     if (Math.abs(num) >= 1000000) return (num / 1000000).toFixed(2) + 'M'
     if (Math.abs(num) >= 1000) return (num / 1000).toFixed(2) + 'K'
     return num.toFixed(2)
   }
-  
+
   return (
     <section>
-      <h2 className="text-2xl font-bold mb-4">Arbitrage Opportunities</h2>
-      
+      <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Arbitrage Opportunities</h2>
+
       <div className="filter-container">
         <div className="checkbox-group">
           <div className="checkbox-item">
@@ -70,7 +70,7 @@ export default function ArbitrageTable({
           </div>
         </div>
       </div>
-      
+
       <div className="filter-container">
         <div className="text-sm font-medium mb-2">Exchange Filters:</div>
         <div className="checkbox-group">
@@ -82,12 +82,12 @@ export default function ArbitrageTable({
           ))}
         </div>
       </div>
-      
-      <div>
+
+      <div style={{ maxHeight: '40vh', overflowY: 'auto', overflowX: 'auto', borderRadius: '6px', border: '1px solid #30363d' }}>
         <table className="arbitrage-table">
           <thead>
             <tr>
-              <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Symbol</th>
+              <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 20, background: '#21262d' }}>Symbol</th>
               <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Long Position</th>
               <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Short Position</th>
               <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>Long Rate (%)</th>
@@ -120,7 +120,7 @@ export default function ArbitrageTable({
           </tbody>
         </table>
       </div>
-      
+
       {filteredOpportunities.length > 0 && (
         <div className="mt-4 text-sm text-muted-foreground">
           Showing {filteredOpportunities.length} arbitrage opportunities.

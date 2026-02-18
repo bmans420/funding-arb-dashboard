@@ -163,10 +163,10 @@ function DashboardContent() {
   }
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-[1400px] mx-auto">
+    <div className="px-2 sm:px-4 pt-4 sm:pt-6 pb-4 max-w-[1400px] mx-auto">
       <header className="mb-4">
-        <h1 className="text-2xl font-bold mb-1">Funding Rates Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold mb-1">Funding Rates Dashboard</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Real-time cryptocurrency funding rates and arbitrage opportunities
         </p>
       </header>

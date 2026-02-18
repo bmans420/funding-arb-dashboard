@@ -53,24 +53,24 @@ export default function ExchangeStatus({ exchangeStatus }: ExchangeStatusProps) 
   return (
     <div className="exchange-status">
       <div
-        className="flex items-center justify-between cursor-pointer"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-center gap-4">
-          <h3 className="text-lg font-semibold">Exchange Health</h3>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <h3 className="text-base sm:text-lg font-semibold">Exchange Health</h3>
+          <div className="flex flex-wrap gap-2">
             <span className="status-item status-healthy">✓ {healthyCount} Healthy</span>
             {warningCount > 0 && <span className="status-item status-warning">⚠ {warningCount} Warning</span>}
             {errorCount > 0 && <span className="status-item status-error">✗ {errorCount} Error</span>}
           </div>
         </div>
-        <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <button className="text-sm text-muted-foreground hover:text-foreground transition-colors self-end sm:self-auto">
           {expanded ? '▲ Hide' : '▼ Details'}
         </button>
       </div>
 
       {expanded && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 mt-4">
           {exchanges.map(exchange => {
             const status = exchangeStatus[exchange]
             if (!status) return null

@@ -92,7 +92,7 @@ export default function FundingMatrix({
       <table className="matrix-table">
         <thead>
           <tr>
-            <th className={getSortClass('symbol')} onClick={() => onSort('symbol')} style={{ position: 'sticky', top: 0, zIndex: 10, background: '#21262d' }}>
+            <th className={getSortClass('symbol')} onClick={() => onSort('symbol')} style={{ position: 'sticky', top: 0, left: 0, zIndex: 20, background: '#21262d' }}>
               Symbol
             </th>
             {exchanges.map(exchange => (

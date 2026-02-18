@@ -66,6 +66,16 @@ body {
   background: #161b22;
   color: #e6edf3;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  position: sticky;
+  left: 0;
+  z-index: 5;
+}
+
+/* Sticky first column header (Symbol) - sticky both top and left */
+.matrix-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 20;
 }
 
 .matrix-cell {
@@ -105,6 +115,20 @@ body {
 
 .arbitrage-table td {
   color: #c9d1d9;
+}
+
+/* Sticky first column for arbitrage table */
+.arbitrage-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+}
+
+.arbitrage-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  background: #161b22;
 }
 
 /* Exchange Status Bar */
@@ -265,20 +289,59 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .timeframe-bar {
-    justify-content: center;
+    gap: 4px;
   }
-  
+
+  .timeframe-button {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
   .filter-container {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
-  
+
   .checkbox-group {
-    justify-content: center;
+    gap: 8px;
   }
-  
+
   .search-input {
     width: 100%;
+  }
+
+  .matrix-table th,
+  .matrix-table td {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .matrix-table th {
+    font-size: 12px;
+  }
+
+  .arbitrage-table th,
+  .arbitrage-table td {
+    padding: 6px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .exchange-status {
+    padding: 8px;
+  }
+
+  .exchange-status .flex.items-center.gap-4 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .status-item {
+    margin-right: 8px;
+    padding: 3px 6px;
+    font-size: 11px;
   }
 }
 
