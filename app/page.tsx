@@ -202,27 +202,25 @@ function DashboardContent() {
             />
           </div>
 
-          <div style={{ maxHeight: '45vh', overflowY: 'auto', borderRadius: '6px', border: '1px solid #30363d' }}>
-            <ArbitrageTable
-              arbitrageOpportunities={data.arbitrageOpportunities}
-              exchanges={data.exchanges}
-              selectedExchanges={selectedExchanges}
-              onExchangeToggle={(exchange) => {
-                if (selectedExchanges.includes(exchange)) {
-                  setSelectedExchanges(selectedExchanges.filter(e => e !== exchange))
-                } else {
-                  setSelectedExchanges([...selectedExchanges, exchange])
-                }
-              }}
-              stocksOnly={stocksOnly}
-              onStocksOnlyToggle={setStocksOnly}
-              top10OI={top10OI}
-              onTop10OIToggle={setTop10OI}
-              filteredSymbols={filteredSymbols}
-              stockSymbols={data.stockSymbols}
-              oiData={data.oiData}
-            />
-          </div>
+          <ArbitrageTable
+            arbitrageOpportunities={data.arbitrageOpportunities}
+            exchanges={data.exchanges}
+            selectedExchanges={selectedExchanges}
+            onExchangeToggle={(exchange) => {
+              if (selectedExchanges.includes(exchange)) {
+                setSelectedExchanges(selectedExchanges.filter(e => e !== exchange))
+              } else {
+                setSelectedExchanges([...selectedExchanges, exchange])
+              }
+            }}
+            stocksOnly={stocksOnly}
+            onStocksOnlyToggle={setStocksOnly}
+            top10OI={top10OI}
+            onTop10OIToggle={setTop10OI}
+            filteredSymbols={filteredSymbols}
+            stockSymbols={data.stockSymbols}
+            oiData={data.oiData}
+          />
         </>
       )}
     </div>
