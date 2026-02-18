@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
         matrixExchanges.add(exchange)
       }
     }
-    const exchanges = [...new Set([...dbExchanges, ...matrixExchanges])].sort()
+    const exchanges = Array.from(new Set([...dbExchanges, ...Array.from(matrixExchanges)])).sort()
     const displayExchanges = exchanges.map(getExchangeDisplayName)
 
     // Transform matrix exchange keys to display names
