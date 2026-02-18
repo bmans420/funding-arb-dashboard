@@ -8,9 +8,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-let cache: { data: any; timestamp: number; days: number } | null = null
-const CACHE_TTL = 5 * 60 * 1000
-
 function getExchangeDisplayName(exchange: string): string {
   if (exchange.startsWith('hl-')) {
     return `HL-${exchange.substring(3)}`
@@ -109,11 +106,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('days') || '7')
 
-    const now = Date.now()
-    if (cache && cache.days === days && (now - cache.timestamp) < CACHE_TTL) {
-      return NextResponse.json(cache.data)
-    }
-
     const [matrixResult, exchangesResult, symbolsResult, statusResult, oiResult, stockResult] = await Promise.all([
       supabase.rpc('get_funding_matrix', { p_days: days }),
       supabase.rpc('get_all_exchanges'),
@@ -175,7 +167,6 @@ export async function GET(request: NextRequest) {
       arbitrageOpportunities
     }
 
-    cache = { data: responseData, timestamp: now, days }
     return NextResponse.json(responseData)
   } catch (error: any) {
     console.error('Error in funding-rates API:', {
